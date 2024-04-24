@@ -1,0 +1,19 @@
+{
+  "admin_email": "admin_email",
+  "app_url": "app_url",
+  "client_url": "client_url",
+  "port": "port",
+  "db_host": "db_host",
+  "db_user": "db_user",
+  "db_password": "db_password",
+  "db_database": "db_database",
+  "jwtPrivateKey": "jwtPrivateKey",
+  "jwtPrivateKeyExpiration": "jwtPrivateKeyExpiration",
+  "mail_host": "mail_host",
+  "mail_port": "mail_port",
+  "mail_user": "mail_user",
+  "mail_password": "mail_password",
+  "cloudinary_cloud_name": "cloudinary_cloud_name",
+  "cloudinary_api_key": "cloudinary_api_key",
+  "cloudinary_api_secret": "cloudinary_api_secret"
+}
