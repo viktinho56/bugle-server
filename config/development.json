@@ -4,7 +4,7 @@
   "client_url": "http://localhost:5173",
   "db_host": "localhost",
   "db_user": "root",
-  "db_password": "",
+  "db_password": "@Password123",
   "db_database": "bugle_db",
   "port": "4000",
   "requiresAuth": true,
