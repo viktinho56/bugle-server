@@ -5,7 +5,7 @@
   "db_host": "localhost",
   "db_user": "root",
   "db_password": "",
-  "db_database": "coren_db",
+  "db_database": "bugle_db",
   "port": "4000",
   "requiresAuth": true,
   "jwtPrivateKey": "@Hidemyass2",

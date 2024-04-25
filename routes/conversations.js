@@ -10,6 +10,7 @@ const auth = require("../middleware/auth");
 router.get("/:id", [auth], async (req, res) => {
   db.query(
     `SELECT U.userId,C.id,C.created,U.userName,U.firstName,U.lastName,U.email,U.avatarUrl,(SELECT CR.message FROM conversation_reply CR WHERE CR.conversationId =C.id ORDER BY CR.id DESC LIMIT 0,1) as lastMessage
+    ,(SELECT CR.created FROM conversation_reply CR WHERE CR.conversationId =C.id ORDER BY CR.id DESC LIMIT 0,1) as lastMessageDate
 FROM users U,conversations C
 WHERE 
 CASE
@@ -50,8 +51,13 @@ router.post("/", [auth], async (req, res) => {
       req.body.senderId,
     ],
     function (err, results) {
+      let conversationId = 0;
       if (results.length > 0) {
-        return res.status(400).send("This Conversation exist already");
+        conversationId = results[0].id;
+        return res.send({
+          conversationId: conversationId,
+          message: "Conversation Exist Already",
+        });
       } else {
         db.query(
           `INSERT INTO ${dbTable} (senderId,receiverId) VALUES(?,?)`,
@@ -61,7 +67,12 @@ router.post("/", [auth], async (req, res) => {
               console.log(err);
               res.status(500).send("Conversation could not be Created");
             } else {
-              res.send("Conversation Created Successfully");
+              conversationId = results.insertId;
+              return res.send({
+                conversationId: conversationId,
+                message: "Conversation Created Successfully",
+              });
+              // res.send("Conversation Created Successfully");
             }
           }
         );
