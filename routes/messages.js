@@ -11,13 +11,7 @@ router.get("/:conversation_id", [auth], async (req, res) => {
     `SELECT U.userId,R.id,R.created,R.message,U.userName,U.firstName,U.lastName,U.email,U.avatarUrl FROM users U,conversation_reply R WHERE R.conversationId = ? AND R.userId = U.userId ORDER BY R.id ASC`,
     [req.params.conversation_id],
     function (err, results) {
-      if (results.length == 0) {
-        res
-          .status(404)
-          .send("There are no messages in the given Conversation ID");
-      } else {
-        res.send(results);
-      }
+      res.send(results);
     }
   );
 });
