@@ -8,6 +8,7 @@
   "db_database": "bugle_db",
   "port": "4000",
   "requiresAuth": true,
+  "jwtPrivateKeyExpiration": "24h",
   "jwtPrivateKey": "@Hidemyass2",
   "mail_host": "premium240.web-hosting.com",
   "mail_port": "465",
