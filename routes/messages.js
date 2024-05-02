@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 // Show messages by conversation_id
 router.get("/:conversation_id", [auth], async (req, res) => {
   db.query(
-    `SELECT U.userId,R.id,R.created,R.message,U.userName,U.firstName,U.lastName,U.email,U.avatarUrl FROM users U,conversation_reply R WHERE R.conversationId = ? AND R.userId = U.userId ORDER BY R.id ASC`,
+    `SELECT U.userId,R.id,R.created,R.message,U.userName,U.firstName,U.lastName,U.email,U.avatarUrl,U.userRank, FROM users U,conversation_reply R WHERE R.conversationId = ? AND R.userId = U.userId ORDER BY R.id ASC`,
     [req.params.conversation_id],
     function (err, results) {
       res.send(results);

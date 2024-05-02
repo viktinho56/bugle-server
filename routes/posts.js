@@ -10,8 +10,8 @@ const auth = require("../middleware/auth");
 router.get("/", [auth], async (req, res) => {
   db.query(
     `SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,
-(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount, 
-(SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount, 
+(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount,
+(SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount,
 (SELECT M.postMediaUrl FROM posts_media M WHERE M.postId=P.postId) AS postMediaUrl,
 (SELECT M.postMediaType FROM posts_media M WHERE M.postId=P.postId) AS postMediaType,
 P.created, P.status FROM users U, posts P WHERE U.userId = P.userId ORDER BY P.postId DESC`,
@@ -30,11 +30,17 @@ P.created, P.status FROM users U, posts P WHERE U.userId = P.userId ORDER BY P.p
 //Show all posts by status
 router.get("/status/:status", [auth], async (req, res) => {
   db.query(
-    "SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount,(SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount,P.created,P.status,M.postMediaUrl,M.postMediaType FROM users U, posts P,posts_media M WHERE U.userId = P.userId AND M.postId = P.postId AND P.status = ? ORDER BY P.postId DESC",
+    `SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,
+(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount, 
+(SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount, 
+(SELECT M.postMediaUrl FROM posts_media M WHERE M.postId=P.postId) AS postMediaUrl,
+(SELECT M.postMediaType FROM posts_media M WHERE M.postId=P.postId) AS postMediaType,
+(SELECT M.thumbNail FROM posts_media M WHERE M.postId=P.postId) AS postMediaThumbNail,
+P.created, P.status FROM users U, posts P WHERE U.userId = P.userId AND p.status = ? ORDER BY P.postId DESC`,
     [req.params.status],
     function (err, results) {
       if (results.length == 0) {
-        res.status(404).send("No record found");
+        res.send([]);
       } else {
         let data = results;
 
@@ -75,7 +81,7 @@ router.get("/count/all", [auth], async (req, res) => {
     `SELECT DISTINCT (SELECT COUNT(*) FROM posts p, posts_media pm WHERE pm.postId = p.postId AND pm.postMediaType = 0 ) AS textPostCount,
  (SELECT COUNT(*) FROM posts p, posts_media pm WHERE pm.postId = p.postId AND pm.postMediaType = 1) AS mediaPostCount,
   (SELECT COUNT(*) FROM posts p WHERE p.status  = 2) AS archivedPostCount , (SELECT COUNT(*) FROM posts p WHERE p.status  = 1) AS activePostCount ,
-  (SELECT COUNT(*) FROM posts p) AS totalPostCount 
+  (SELECT COUNT(*) FROM posts p) AS totalPostCount
 FROM posts`,
     function (err, results) {
       console.log(err);
@@ -89,9 +95,11 @@ router.post("/", [auth], async (req, res) => {
   console.log(req.body);
   const { error } = validatePosts(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+  const currentDateTime = new Date();
+  let mysqlDate = currentDateTime.toISOString().slice(0, 19).replace("T", " ");
   db.query(
-    "SELECT * FROM `posts` where userId = ? AND postContent = ?",
-    [req.body.userId, req.body.postContent],
+    "SELECT * FROM `posts` where userId = ? AND postContent = ? AND created = ?",
+    [req.body.userId, req.body.postContent, mysqlDate],
     function (err, results) {
       if (results.length > 0) {
         return res.status(400).send("Duplicate Posts Found");

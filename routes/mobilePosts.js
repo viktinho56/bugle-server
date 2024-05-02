@@ -16,14 +16,15 @@ router.get("/:id", [auth], async (req, res) => {
 (SELECT M.postMediaUrl FROM posts_media M WHERE M.postId=P.postId) AS postMediaUrl,
 (SELECT M.postMediaType FROM posts_media M WHERE M.postId=P.postId) AS postMediaType,
 (SELECT M.thumbNail FROM posts_media M WHERE M.postId=P.postId) AS postMediaThumbNail,
-P.created, P.status FROM users U, posts P WHERE U.userId = P.userId ORDER BY P.postId DESC`,
-    [req.params.id],
+P.created, P.status FROM users U, posts P WHERE U.userId = P.userId AND p.status = ? ORDER BY P.postId DESC`,
+    [req.params.id, 1],
     function (err, results) {
+      let dataArray = [];
       if (results.length == 0) {
-        res.status(404).send("No record found");
+        res.send(dataArray);
       } else {
         let data = results;
-        let dataArray = [];
+
         for (let index = 0; index < data.length; index++) {
           const element = data[index];
           let obj = {
@@ -73,11 +74,12 @@ router.get("/user_posts/:id", [auth], async (req, res) => {
 P.created, P.status FROM users U, posts P WHERE U.userId = P.userId AND P.userId = ? ORDER BY P.postId DESC`,
     [req.params.id, req.params.id],
     function (err, results) {
+      let dataArray = [];
       if (results.length == 0) {
-        res.status(404).send("No record found");
+        res.send(dataArray);
       } else {
         let data = results;
-        let dataArray = [];
+
         for (let index = 0; index < data.length; index++) {
           const element = data[index];
           let obj = {
@@ -131,30 +133,30 @@ router.get("/status/:status", [auth], async (req, res) => {
   );
 });
 
-// //Show posts by id
-// router.get("/:id", [auth], async (req, res) => {
-//   db.query(
-//     "SELECT * FROM posts WHERE postId = ?",
-//     [req.params.id],
-//     function (err, results) {
-//       if (results.length == 0) {
-//         res.status(404).send("The posts withe given ID could not be  Found.");
-//       } else {
-//         let data = results[0];
-//         db.query(
-//           `SELECT * FROM posts_media WHERE postMediaId = ?`,
-//           [results[0].postId],
-//           function (err, results) {
-//             console.log(results);
-//             data.postMedia = results;
-//             res.send(data);
-//           }
-//         );
-//         //res.send(results);
-//       }
-//     }
-//   );
-// });
+//Show posts by id
+router.get("/:id", [auth], async (req, res) => {
+  db.query(
+    "SELECT * FROM posts WHERE postId = ?",
+    [req.params.id],
+    function (err, results) {
+      if (results.length == 0) {
+        res.status(404).send("The posts withe given ID could not be  Found.");
+      } else {
+        let data = results[0];
+        db.query(
+          `SELECT * FROM posts_media WHERE postMediaId = ?`,
+          [results[0].postId],
+          function (err, results) {
+            console.log(results);
+            data.postMedia = results;
+            res.send(data);
+          }
+        );
+        //res.send(results);
+      }
+    }
+  );
+});
 
 //Show all posts count
 router.get("/count/all", [auth], async (req, res) => {
