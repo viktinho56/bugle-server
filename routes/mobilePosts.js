@@ -405,10 +405,11 @@ function validatePosts(posts) {
   const schema = {
     userId: Joi.number().min(1).required(),
     postContent: Joi.string().trim().strict().min(2).required(),
+    postsGroup: Joi.number().required(),
     postMedia: Joi.array().items(
       Joi.object({
         mediaUrl: Joi.string().allow(""),
-        mediaType: Joi.number().allow(""),
+        mediaType: Joi.string().allow(""),
         mediaThumb: Joi.string().allow(""),
       })
     ),
