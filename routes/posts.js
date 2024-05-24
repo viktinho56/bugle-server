@@ -105,8 +105,8 @@ router.post("/", [auth], async (req, res) => {
         return res.status(400).send("Duplicate Posts Found");
       } else {
         db.query(
-          "INSERT INTO `posts` (userId,postContent,status) VALUES(?,?,?)",
-          [req.body.userId, req.body.postContent, 1],
+          "INSERT INTO `posts` (userId,postContent,postsGroup,status) VALUES(?,?,?,?)",
+          [req.body.userId, req.body.postContent, 1, req.body.postsGroup],
           function (err, results) {
             let postObject = results;
             console.log(postObject.insertId);
@@ -257,6 +257,7 @@ function validatePosts(posts) {
   const schema = {
     userId: Joi.number().min(1).required(),
     postContent: Joi.string().trim().strict().min(2).required(),
+    postsGroup: Joi.number().required(),
     postMedia: Joi.array().items(
       Joi.object({
         mediaUrl: Joi.string().allow(""),

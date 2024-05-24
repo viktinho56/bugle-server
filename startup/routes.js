@@ -1,6 +1,7 @@
 const express = require("express");
 const auth = require("../routes/auth");
 const users = require("../routes/users");
+const groups = require("../routes/groups");
 const conversations = require("../routes/conversations");
 const messages = require("../routes/messages");
 const posts = require("../routes/posts");
@@ -19,6 +20,7 @@ module.exports = function (app) {
   app.use(express.json());
   app.use("/api/auth", auth);
   app.use("/api/users", users);
+  app.use("/api/groups", groups);
   app.use("/api/posts", posts);
   app.use("/api/mobile_posts", mobilePosts);
   app.use("/api/posts_analysis", postsAnalysis);

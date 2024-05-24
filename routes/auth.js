@@ -19,14 +19,16 @@ router.post("/", async (req, res) => {
     .toISOString()
     .slice(0, 19)
     .replace("T", " ");
+  const postGroupUsersDB = "postGroupUsers";
+  const postGroupDB = "postGroups";
+  let groupArray = [{ id: 1, name: "General" }];
   db.query(
     `SELECT * FROM ${dbTable} WHERE email =? AND status =?`,
     [req.body.email, 0],
     async function (err, results) {
-      //let fullName = "";
       if (results.length == 1) {
         const user = results[0];
-        //fullName = user.firstName + " " + user.lastName;
+
         const validPassword = await bcrypt.compare(
           req.body.password,
           user.password
@@ -37,9 +39,22 @@ router.post("/", async (req, res) => {
           formattedDate,
           req.body.email,
         ]);
-        const token = generateAuthToken(user);
-        //sendOtpEmail(req.body.email, "OTP", req.body.code, fullName);
-        res.send(token);
+        db.query(
+          `SELECT PG.groupName,PG.id FROM ${postGroupDB} PG , ${postGroupUsersDB} PGU WHERE PGU.userId = ? AND PG.id = PGU.postGroupId`,
+          [user.userId],
+          async function (err, results) {
+            if (results.length > 0) {
+              for (let index = 0; index < results.length; index++) {
+                const element = results[index];
+                groupArray.push({ id: element.id, name: element.groupName });
+              }
+            }
+            console.log(groupArray);
+            user.groupArray = groupArray;
+            const token = generateAuthToken(user);
+            res.send(token);
+          }
+        );
       } else {
         return res.status(400).send("Invalid email or password.");
       }

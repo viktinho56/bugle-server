@@ -7,24 +7,24 @@ const db = require("../startup/db")();
 const auth = require("../middleware/auth");
 
 //Show all posts by id
-router.get("/:id", [auth], async (req, res) => {
+router.get("/:id/", [auth], async (req, res) => {
   db.query(
-    `SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,
+    `SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,P.postsGroup,PG.groupName,
 (SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount, 
 (SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount, 
 (SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId AND PL.userId=?) AS userLikesCount,
 (SELECT M.postMediaUrl FROM posts_media M WHERE M.postId=P.postId) AS postMediaUrl,
 (SELECT M.postMediaType FROM posts_media M WHERE M.postId=P.postId) AS postMediaType,
 (SELECT M.thumbNail FROM posts_media M WHERE M.postId=P.postId) AS postMediaThumbNail,
-P.created, P.status FROM users U, posts P WHERE U.userId = P.userId AND p.status = ? ORDER BY P.postId DESC`,
-    [req.params.id, 1],
+P.created, P.status FROM users U, posts P, postGroups PG WHERE U.userId = P.userId AND p.status = ? AND PG.id = P.postsGroup AND p.postsGroup = ? ORDER BY P.postId DESC`,
+    [req.params.id, 1, 1],
     function (err, results) {
       let dataArray = [];
       if (results.length == 0) {
         res.send(dataArray);
       } else {
         let data = results;
-
+        console.log(data);
         for (let index = 0; index < data.length; index++) {
           const element = data[index];
           let obj = {
@@ -48,7 +48,61 @@ P.created, P.status FROM users U, posts P WHERE U.userId = P.userId AND p.status
             isUserLiked: element.userLikesCount > 0 ? true : false,
             videoLink: element.postMediaType == 2 ? element.postMediaUrl : "",
             isVideo: element.postMediaType == 2 ? true : false,
-            group: "",
+            group: element.groupName,
+            relativeTime: moment(element.created).fromNow(),
+            commentCount: element.commentsCount,
+            comments: [],
+          };
+          dataArray.push(obj);
+        }
+        res.send(dataArray);
+      }
+    }
+  );
+});
+
+router.get("/:id/:groupId", [auth], async (req, res) => {
+  db.query(
+    `SELECT U.userId,U.userRank,U.firstName,U.lastName,U.email,U.avatarUrl,P.postId,P.postContent,P.postsGroup,PG.groupName,
+(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId) AS likesCount, 
+(SELECT COUNT(*) FROM posts_comments PC WHERE PC.postId=P.postId) AS commentsCount, 
+(SELECT COUNT(*) FROM posts_likes PL WHERE PL.postId=P.postId AND PL.userId=?) AS userLikesCount,
+(SELECT M.postMediaUrl FROM posts_media M WHERE M.postId=P.postId) AS postMediaUrl,
+(SELECT M.postMediaType FROM posts_media M WHERE M.postId=P.postId) AS postMediaType,
+(SELECT M.thumbNail FROM posts_media M WHERE M.postId=P.postId) AS postMediaThumbNail,
+P.created, P.status FROM users U, posts P, postGroups PG WHERE U.userId = P.userId AND p.status = ? AND PG.id = P.postsGroup AND p.postsGroup = ? OR p. postsGroup = ?  ORDER BY P.postId DESC`,
+    [req.params.id, 1, 1, req.params.groupId],
+    function (err, results) {
+      let dataArray = [];
+      if (results.length == 0) {
+        res.send(dataArray);
+      } else {
+        let data = results;
+        console.log(data);
+        for (let index = 0; index < data.length; index++) {
+          const element = data[index];
+          let obj = {
+            postId: element.postId,
+            hashTag: "",
+            rePosts: 0,
+            showThread: false,
+            postInfoText: "",
+            post: element.postContent,
+            profilePicture: element.avatarUrl,
+            name: element.firstName + " " + element.lastName,
+            tag: "",
+            likes: element.likesCount,
+            hasCheckMark: false,
+            time: element.created,
+            image:
+              element.postMediaType == 1
+                ? element.postMediaUrl
+                : element.postMediaThumbNail,
+            userId: element.userId,
+            isUserLiked: element.userLikesCount > 0 ? true : false,
+            videoLink: element.postMediaType == 2 ? element.postMediaUrl : "",
+            isVideo: element.postMediaType == 2 ? true : false,
+            group: element.groupName,
             relativeTime: moment(element.created).fromNow(),
             commentCount: element.commentsCount,
             comments: [],
